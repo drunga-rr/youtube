@@ -357,6 +357,12 @@ function resetMkvDownload() {
   mkvBar.style.width = "0%";
 }
 
+function formatBytes(bytes) {
+  if (bytes < 1024 ** 2) return `${Math.ceil(bytes / 1024)} KB`;
+  if (bytes < 1024 ** 3) return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
+  return `${(bytes / 1024 ** 3).toFixed(2)} GB`;
+}
+
 function handleMkvFile(input) {
   mkvFile = input.files[0] || null;
   mkvFilename.textContent = mkvFile
@@ -415,6 +421,16 @@ convertMkvButton.addEventListener("click", async function () {
   mkvProgress.hidden = false;
   mkvStatus.textContent = "Carregando conversor de vídeo...";
 
+  const maxBrowserSize = 1024 ** 3;
+
+  if (mkvFile.size > maxBrowserSize) {
+    mkvStatus.textContent =
+      `Este arquivo tem ${formatBytes(mkvFile.size)}. ` +
+      "Para arquivos maiores que 1 GB, use FFmpeg no computador.";
+    convertMkvButton.disabled = false;
+    return;
+  }
+
   const inputName = "entrada.mkv";
   const outputName = "saida.mp4";
 
@@ -423,6 +439,20 @@ convertMkvButton.addEventListener("click", async function () {
     const { fetchFile } = window.FFmpegUtil;
 
     mkvStatus.textContent = "Lendo arquivo MKV...";
+    const header = new Uint8Array(await mkvFile.slice(0, 4).arrayBuffer());
+
+    if (
+      header.length < 4 ||
+      header[0] !== 0x1a ||
+      header[1] !== 0x45 ||
+      header[2] !== 0xdf ||
+      header[3] !== 0xa3
+    ) {
+      const invalidFile = new Error("Arquivo não possui assinatura MKV.");
+      invalidFile.code = "INVALID_MKV";
+      throw invalidFile;
+    }
+
     await ffmpeg.writeFile(inputName, await fetchFile(mkvFile));
 
     await ffmpeg.exec([
@@ -459,7 +489,9 @@ convertMkvButton.addEventListener("click", async function () {
   } catch (error) {
     console.error("Erro na conversão MKV:", error);
     mkvStatus.textContent =
-      "Não foi possível converter este MKV. Verifique o formato e a conexão.";
+      error.code === "INVALID_MKV"
+        ? "Este arquivo não é um MKV válido. Baixe o vídeo original, não a página de confirmação do Google Drive."
+        : "Não foi possível converter este MKV. Verifique o formato e a conexão.";
   } finally {
     convertMkvButton.disabled = !mkvFile;
   }
