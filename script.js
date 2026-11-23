@@ -2,332 +2,476 @@
 // YOUTUBE PLAYER
 // ==========================================
 
-const urlInput = document.querySelector("#videoUrl");
-const playButton = document.querySelector("#play");
-const frame = document.querySelector("#frame");
-const empty = document.querySelector("#empty");
-const status = document.querySelector("#status");
-const openYT = document.querySelector("#openYT");
+const urlInput = document.querySelector('#videoUrl');
+const playButton = document.querySelector('#play');
+const frame = document.querySelector('#frame');
+const empty = document.querySelector('#empty');
+const status = document.querySelector('#status');
+const openYT = document.querySelector('#openYT');
 
 // Extrair ID do vídeo do YouTube
 function getYouTubeId(raw) {
-  if (!raw) return null;
+    if (!raw) return null;
 
-  try {
-    const value = raw.trim();
-    const url = new URL(
-      /^https?:\/\//i.test(value) ? value : `https://${value}`
-    );
-    const host = url.hostname.toLowerCase();
-
-    let id = null;
-
-    // Links curtos: youtu.be/ID
-    if (host === "youtu.be" || host.endsWith(".youtu.be")) {
-      id = url.pathname.split("/").filter(Boolean)[0];
-    }
-
-    // Links youtube.com
-    else if (
-      host === "youtube.com" ||
-      host.endsWith(".youtube.com") ||
-      host === "youtube-nocookie.com" ||
-      host.endsWith(".youtube-nocookie.com")
-    ) {
-      if (url.pathname === "/watch") {
-        id = url.searchParams.get("v");
-      } else {
-        const match = url.pathname.match(
-          /\/(embed|shorts|live)\/([a-zA-Z0-9_-]+)/
+    try {
+        const value = raw.trim();
+        const url = new URL(
+            /^https?:\/\//i.test(value) ? value : `https://${value}`
         );
+        const host = url.hostname.toLowerCase();
 
-        if (match) {
-          id = match[2];
+        let id = null;
+
+        // Links curtos: youtu.be/ID
+        if (host === "youtu.be" || host.endsWith(".youtu.be")) {
+            id = url.pathname.split("/").filter(Boolean)[0];
         }
-      }
-    }
 
-    if (id && /^[a-zA-Z0-9_-]{11}$/.test(id)) {
-      return id;
-    }
+        // Links youtube.com
+        else if (
+            host === "youtube.com" ||
+            host.endsWith(".youtube.com") ||
+            host === "youtube-nocookie.com" ||
+            host.endsWith(".youtube-nocookie.com")
+        ) {
+            if (url.pathname === "/watch") {
+                id = url.searchParams.get("v");
+            } else {
+                const match = url.pathname.match(
+                    /\/(embed|shorts|live)\/([a-zA-Z0-9_-]+)/
+                );
 
-    return null;
-  } catch (error) {
-    console.error("Erro ao identificar vídeo:", error);
-    return null;
-  }
+                if (match) {
+                    id = match[2];
+                }
+            }
+        }
+
+        if (id && /^[a-zA-Z0-9_-]{11}$/.test(id)) {
+            return id;
+        }
+
+        return null;
+
+    } catch (error) {
+        console.error("Erro ao identificar vídeo:", error);
+        return null;
+    }
 }
+
 
 // Carregar vídeo
 function loadVideo() {
-  status.textContent = "Verificando link...";
 
-  const id = getYouTubeId(urlInput.value);
+    status.textContent = "Verificando link...";
 
-  if (!id) {
-    status.textContent = "Link inválido. Verifique o endereço do YouTube.";
-    return;
-  }
+    const id = getYouTubeId(urlInput.value);
 
-  console.log("ID do vídeo:", id);
+    if (!id) {
+        status.textContent = "Link inválido. Verifique o endereço do YouTube.";
+        return;
+    }
 
-  const siteOrigin = window.location.origin;
-  const siteUrl = window.location.href.split("#")[0];
-  const params = new URLSearchParams({
-    rel: "0",
-    modestbranding: "1",
-    origin: siteOrigin,
-    widget_referrer: siteUrl,
-  });
+    console.log("ID do vídeo:", id);
 
-  frame.src = `https://www.youtube-nocookie.com/embed/${id}?${params}`;
+    const siteOrigin = window.location.origin;
+    const siteUrl = window.location.href.split('#')[0];
+    const params = new URLSearchParams({
+        rel: '0',
+        modestbranding: '1',
+        autoplay: '1',
+        playsinline: '1',
+        origin: siteOrigin,
+        widget_referrer: siteUrl
+    });
 
-  frame.hidden = false;
-  empty.hidden = true;
+    frame.src = `https://www.youtube.com/embed/${id}?${params}`;
 
-  openYT.href = "https://www.youtube.com/watch?v=" + id;
-  openYT.hidden = false;
+    frame.hidden = false;
+    empty.hidden = true;
 
-  status.textContent = "Abrindo o player do YouTube...";
+    openYT.href = "https://www.youtube.com/watch?v=" + id;
+    openYT.hidden = false;
+
+    status.textContent = "Abrindo o player do YouTube...";
 }
 
 window.loadVideo = loadVideo;
 
-frame.addEventListener("load", function () {
-  if (!frame.hidden) {
-    status.textContent =
-      "Player aberto. Se aparecer 'Vídeo indisponível', este vídeo não permite incorporação; use 'Ver no YouTube'.";
-  }
+
+frame.addEventListener('load', function() {
+    if (!frame.hidden) {
+        status.textContent = "Player aberto. Se a reprodução automática for bloqueada, clique no play dentro do vídeo.";
+    }
 });
+
 
 // Reproduzir ao pressionar Enter
-urlInput.addEventListener("keydown", function (event) {
-  if (event.key === "Enter") {
-    loadVideo();
-  }
-});
+urlInput.addEventListener(
+    'keydown',
+    function(event) {
+
+        if (event.key === 'Enter') {
+            loadVideo();
+        }
+
+    }
+);
+
 
 // Limpar player
-document.querySelector("#clear").addEventListener("click", function () {
-  frame.src = "";
+document.querySelector('#clear').addEventListener(
+    'click',
+    function() {
 
-  frame.hidden = true;
+        frame.src = '';
 
-  empty.hidden = false;
+        frame.hidden = true;
 
-  openYT.hidden = true;
+        empty.hidden = false;
 
-  urlInput.value = "";
+        openYT.hidden = true;
 
-  status.textContent = "";
+        urlInput.value = '';
 
-  urlInput.focus();
-});
+        status.textContent = '';
+
+        urlInput.focus();
+
+    }
+);
+
 
 // ==========================================
 // CONVERSOR DE ARQUIVOS LOCAIS PARA MP3
 // ==========================================
 
-const fileInput = document.querySelector("#localFile");
+const fileInput =
+    document.querySelector('#localFile');
 
-const filename = document.querySelector("#filename");
+const filename =
+    document.querySelector('#filename');
 
-const convertButton = document.querySelector("#convert");
+const convertButton =
+    document.querySelector('#convert');
 
-const progress = document.querySelector("#progress");
+const progress =
+    document.querySelector('#progress');
 
-const bar = document.querySelector("#bar");
+const bar =
+    document.querySelector('#bar');
 
-const convertStatus = document.querySelector("#convertStatus");
+const convertStatus =
+    document.querySelector('#convertStatus');
 
-const download = document.querySelector("#download");
+const download =
+    document.querySelector('#download');
 
 let file = null;
 let downloadUrl = null;
 
 function resetDownload() {
-  download.hidden = true;
-  download.removeAttribute("href");
-  download.removeAttribute("download");
-  bar.style.width = "0%";
+    download.hidden = true;
+    download.removeAttribute('href');
+    download.removeAttribute('download');
+    bar.style.width = '0%';
 }
 
+
 // Selecionar arquivo
-fileInput.addEventListener("change", function () {
-  file = fileInput.files[0] || null;
+fileInput.addEventListener(
+    'change',
+    function() {
 
-  filename.textContent = file ? file.name : "Nenhum arquivo selecionado.";
+        file = fileInput.files[0] || null;
 
-  convertButton.disabled = !file;
+        filename.textContent = file
+            ? file.name
+            : 'Nenhum arquivo selecionado.';
 
-  resetDownload();
+        convertButton.disabled = !file;
 
-  convertStatus.textContent = "";
+        resetDownload();
 
-  if (downloadUrl) {
-    URL.revokeObjectURL(downloadUrl);
+        convertStatus.textContent = '';
 
-    downloadUrl = null;
-  }
-});
+        if (downloadUrl) {
+
+            URL.revokeObjectURL(downloadUrl);
+
+            downloadUrl = null;
+
+        }
+
+    }
+);
+
 
 // Reamostragem de áudio
 function resample(data, fromRate, toRate) {
-  if (fromRate === toRate) {
-    return data;
-  }
 
-  const ratio = fromRate / toRate;
+    if (fromRate === toRate) {
+        return data;
+    }
 
-  const length = Math.round(data.length / ratio);
+    const ratio = fromRate / toRate;
 
-  const output = new Float32Array(length);
+    const length = Math.round(
+        data.length / ratio
+    );
 
-  for (let i = 0; i < length; i++) {
-    const position = i * ratio;
+    const output = new Float32Array(length);
 
-    const left = Math.floor(position);
+    for (let i = 0; i < length; i++) {
 
-    const right = Math.min(left + 1, data.length - 1);
+        const position = i * ratio;
 
-    const fraction = position - left;
+        const left = Math.floor(position);
 
-    output[i] = data[left] * (1 - fraction) + data[right] * fraction;
-  }
+        const right = Math.min(
+            left + 1,
+            data.length - 1
+        );
 
-  return output;
+        const fraction = position - left;
+
+        output[i] =
+            data[left] * (1 - fraction) +
+            data[right] * fraction;
+
+    }
+
+    return output;
+
 }
+
 
 // Converter amostras para PCM
 function pcm(data) {
-  const output = new Int16Array(data.length);
 
-  for (let i = 0; i < data.length; i++) {
-    let value = Math.max(-1, Math.min(1, data[i]));
+    const output = new Int16Array(data.length);
 
-    output[i] = value < 0 ? value * 32768 : value * 32767;
-  }
+    for (let i = 0; i < data.length; i++) {
 
-  return output;
+        let value = Math.max(
+            -1,
+            Math.min(1, data[i])
+        );
+
+        output[i] = value < 0
+            ? value * 32768
+            : value * 32767;
+
+    }
+
+    return output;
+
 }
 
+
 // Conversão para MP3
-convertButton.addEventListener("click", async function () {
-  if (!file) {
-    return;
-  }
+convertButton.addEventListener(
+    'click',
+    async function() {
 
-  if (!window.lamejs) {
-    convertStatus.textContent = "Conversor não carregado. Verifique a conexão.";
+        if (!file) {
+            return;
+        }
 
-    return;
-  }
+        if (!window.lamejs) {
 
-  convertButton.disabled = true;
+            convertStatus.textContent =
+                'Conversor não carregado. Verifique a conexão.';
 
-  resetDownload();
+            return;
 
-  progress.hidden = false;
+        }
 
-  bar.style.width = "0%";
+        convertButton.disabled = true;
 
-  convertStatus.textContent = "Lendo arquivo...";
+        resetDownload();
 
-  let audioContext;
+        progress.hidden = false;
 
-  try {
-    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        bar.style.width = '0%';
 
-    if (!AudioContextClass) {
-      throw new Error("AudioContext não suportado neste navegador.");
+        convertStatus.textContent =
+            'Lendo arquivo...';
+
+        let audioContext;
+
+        try {
+
+            const AudioContextClass =
+                window.AudioContext || window.webkitAudioContext;
+
+            if (!AudioContextClass) {
+                throw new Error('AudioContext não suportado neste navegador.');
+            }
+
+            const raw =
+                await file.arrayBuffer();
+
+            audioContext = new AudioContextClass();
+
+            const audio =
+                await audioContext.decodeAudioData(
+                    raw.slice(0)
+                );
+
+            const sampleRate = 44100;
+
+            const left = pcm(
+                resample(
+                    audio.getChannelData(0),
+                    audio.sampleRate,
+                    sampleRate
+                )
+            );
+
+            const right = pcm(
+                resample(
+                    audio.numberOfChannels > 1
+                        ? audio.getChannelData(1)
+                        : audio.getChannelData(0),
+                    audio.sampleRate,
+                    sampleRate
+                )
+            );
+
+            const encoder =
+                new lamejs.Mp3Encoder(
+                    2,
+                    sampleRate,
+                    192
+                );
+
+            const chunks = [];
+
+            const blockSize = 1152;
+
+            // Processar o áudio
+            for (
+                let i = 0;
+                i < left.length;
+                i += blockSize
+            ) {
+
+                const leftChunk =
+                    left.subarray(
+                        i,
+                        i + blockSize
+                    );
+
+                const rightChunk =
+                    right.subarray(
+                        i,
+                        i + blockSize
+                    );
+
+                const encoded =
+                    encoder.encodeBuffer(
+                        leftChunk,
+                        rightChunk
+                    );
+
+                if (encoded.length) {
+
+                    chunks.push(
+                        new Uint8Array(encoded)
+                    );
+
+                }
+
+                const percent =
+                    Math.floor(
+                        (i / left.length) * 100
+                    );
+
+                bar.style.width =
+                    percent + '%';
+
+                convertStatus.textContent =
+                    'Convertendo... ' +
+                    percent +
+                    '%';
+
+                // Liberar o navegador periodicamente
+                if (
+                    i % (blockSize * 100) === 0
+                ) {
+
+                    await new Promise(
+                        resolve =>
+                            setTimeout(resolve, 0)
+                    );
+
+                }
+
+            }
+
+            // Finalizar codificação
+            const finalChunk =
+                encoder.flush();
+
+            if (finalChunk.length) {
+
+                chunks.push(
+                    new Uint8Array(finalChunk)
+                );
+
+            }
+
+            // Criar MP3
+            const mp3Blob =
+                new Blob(
+                    chunks,
+                    {
+                        type: 'audio/mpeg'
+                    }
+                );
+
+            downloadUrl =
+                URL.createObjectURL(mp3Blob);
+
+            download.href =
+                downloadUrl;
+
+            download.download =
+                file.name.replace(
+                    /\.[^.]+$/,
+                    ''
+                ) + '.mp3';
+
+            download.hidden = false;
+
+            bar.style.width = '100%';
+
+            convertStatus.textContent =
+                'Conversão concluída!';
+
+        } catch (error) {
+
+            console.error(error);
+
+            convertStatus.textContent =
+                'Não foi possível converter este arquivo. ' +
+                'O navegador pode não suportar o formato.';
+
+        } finally {
+
+            if (audioContext) {
+
+                await audioContext
+                    .close()
+                    .catch(() => {});
+
+            }
+
+            convertButton.disabled =
+                !file;
+
+        }
+
     }
-
-    const raw = await file.arrayBuffer();
-
-    audioContext = new AudioContextClass();
-
-    const audio = await audioContext.decodeAudioData(raw.slice(0));
-
-    const sampleRate = 44100;
-
-    const left = pcm(
-      resample(audio.getChannelData(0), audio.sampleRate, sampleRate)
-    );
-
-    const right = pcm(
-      resample(
-        audio.numberOfChannels > 1
-          ? audio.getChannelData(1)
-          : audio.getChannelData(0),
-        audio.sampleRate,
-        sampleRate
-      )
-    );
-
-    const encoder = new lamejs.Mp3Encoder(2, sampleRate, 192);
-
-    const chunks = [];
-
-    const blockSize = 1152;
-
-    // Processar o áudio
-    for (let i = 0; i < left.length; i += blockSize) {
-      const leftChunk = left.subarray(i, i + blockSize);
-
-      const rightChunk = right.subarray(i, i + blockSize);
-
-      const encoded = encoder.encodeBuffer(leftChunk, rightChunk);
-
-      if (encoded.length) {
-        chunks.push(new Uint8Array(encoded));
-      }
-
-      const percent = Math.floor((i / left.length) * 100);
-
-      bar.style.width = percent + "%";
-
-      convertStatus.textContent = "Convertendo... " + percent + "%";
-
-      // Liberar o navegador periodicamente
-      if (i % (blockSize * 100) === 0) {
-        await new Promise((resolve) => setTimeout(resolve, 0));
-      }
-    }
-
-    // Finalizar codificação
-    const finalChunk = encoder.flush();
-
-    if (finalChunk.length) {
-      chunks.push(new Uint8Array(finalChunk));
-    }
-
-    // Criar MP3
-    const mp3Blob = new Blob(chunks, {
-      type: "audio/mpeg",
-    });
-
-    downloadUrl = URL.createObjectURL(mp3Blob);
-
-    download.href = downloadUrl;
-
-    download.download = file.name.replace(/\.[^.]+$/, "") + ".mp3";
-
-    download.hidden = false;
-
-    bar.style.width = "100%";
-
-    convertStatus.textContent = "Conversão concluída!";
-  } catch (error) {
-    console.error(error);
-
-    convertStatus.textContent =
-      "Não foi possível converter este arquivo. " +
-      "O navegador pode não suportar o formato.";
-  } finally {
-    if (audioContext) {
-      await audioContext.close().catch(() => {});
-    }
-
-    convertButton.disabled = !file;
-  }
-});
+);
