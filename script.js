@@ -333,3 +333,129 @@ convertButton.addEventListener("click", async function () {
     convertButton.disabled = !file;
   }
 });
+
+// ==========================================
+// CONVERSOR MKV PARA MP4
+// ==========================================
+
+const mkvFileInput = document.querySelector("#mkvFile");
+const mkvFilename = document.querySelector("#mkvFilename");
+const convertMkvButton = document.querySelector("#convertMkv");
+const mkvProgress = document.querySelector("#mkvProgress");
+const mkvBar = document.querySelector("#mkvBar");
+const mkvStatus = document.querySelector("#mkvStatus");
+const mkvDownload = document.querySelector("#mkvDownload");
+
+let mkvFile = null;
+let mkvDownloadUrl = null;
+let ffmpegInstance = null;
+
+function resetMkvDownload() {
+  mkvDownload.hidden = true;
+  mkvDownload.removeAttribute("href");
+  mkvDownload.removeAttribute("download");
+  mkvBar.style.width = "0%";
+}
+
+mkvFileInput.addEventListener("change", function () {
+  mkvFile = mkvFileInput.files[0] || null;
+  mkvFilename.textContent = mkvFile
+    ? mkvFile.name
+    : "Nenhum arquivo selecionado.";
+  convertMkvButton.disabled = !mkvFile;
+  mkvStatus.textContent = "";
+  resetMkvDownload();
+
+  if (mkvDownloadUrl) {
+    URL.revokeObjectURL(mkvDownloadUrl);
+    mkvDownloadUrl = null;
+  }
+});
+
+async function getFFmpeg() {
+  if (ffmpegInstance) return ffmpegInstance;
+
+  if (!window.FFmpegWASM || !window.FFmpegUtil) {
+    throw new Error("Biblioteca FFmpeg não carregada. Verifique a conexão.");
+  }
+
+  const { FFmpeg } = window.FFmpegWASM;
+  const { toBlobURL } = window.FFmpegUtil;
+  const ffmpeg = new FFmpeg();
+  const coreBase = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd";
+
+  ffmpeg.on("progress", ({ progress }) => {
+    const percent = Math.max(0, Math.min(100, Math.round(progress * 100)));
+    mkvBar.style.width = `${percent}%`;
+    mkvStatus.textContent = `Convertendo MKV para MP4... ${percent}%`;
+  });
+
+  await ffmpeg.load({
+    coreURL: await toBlobURL(`${coreBase}/ffmpeg-core.js`, "text/javascript"),
+    wasmURL: await toBlobURL(
+      `${coreBase}/ffmpeg-core.wasm`,
+      "application/wasm"
+    ),
+  });
+
+  ffmpegInstance = ffmpeg;
+  return ffmpeg;
+}
+
+convertMkvButton.addEventListener("click", async function () {
+  if (!mkvFile) return;
+
+  convertMkvButton.disabled = true;
+  resetMkvDownload();
+  mkvProgress.hidden = false;
+  mkvStatus.textContent = "Carregando conversor de vídeo...";
+
+  const inputName = "entrada.mkv";
+  const outputName = "saida.mp4";
+
+  try {
+    const ffmpeg = await getFFmpeg();
+    const { fetchFile } = window.FFmpegUtil;
+
+    mkvStatus.textContent = "Lendo arquivo MKV...";
+    await ffmpeg.writeFile(inputName, await fetchFile(mkvFile));
+
+    await ffmpeg.exec([
+      "-i",
+      inputName,
+      "-c:v",
+      "libx264",
+      "-preset",
+      "veryfast",
+      "-crf",
+      "23",
+      "-c:a",
+      "aac",
+      "-b:a",
+      "192k",
+      "-movflags",
+      "+faststart",
+      outputName,
+    ]);
+
+    const data = await ffmpeg.readFile(outputName);
+    const mp4Blob = new Blob([data.buffer], { type: "video/mp4" });
+    mkvDownloadUrl = URL.createObjectURL(mp4Blob);
+
+    const baseName = mkvFile.name.replace(/\.[^.]+$/, "") || "video";
+    mkvDownload.href = mkvDownloadUrl;
+    mkvDownload.download = `${baseName}.mp4`;
+    mkvDownload.hidden = false;
+    mkvBar.style.width = "100%";
+    mkvStatus.textContent = "Conversão concluída!";
+
+    await ffmpeg.deleteFile(inputName).catch(() => {});
+    await ffmpeg.deleteFile(outputName).catch(() => {});
+  } catch (error) {
+    console.error("Erro na conversão MKV:", error);
+    mkvStatus.textContent =
+      "Não foi possível converter este MKV. Verifique o formato e a conexão.";
+  } finally {
+    convertMkvButton.disabled = !mkvFile;
+  }
+});
