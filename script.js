@@ -357,8 +357,8 @@ function resetMkvDownload() {
   mkvBar.style.width = "0%";
 }
 
-mkvFileInput.addEventListener("change", function () {
-  mkvFile = mkvFileInput.files[0] || null;
+function handleMkvFile(input) {
+  mkvFile = input.files[0] || null;
   mkvFilename.textContent = mkvFile
     ? mkvFile.name
     : "Nenhum arquivo selecionado.";
@@ -370,6 +370,11 @@ mkvFileInput.addEventListener("change", function () {
     URL.revokeObjectURL(mkvDownloadUrl);
     mkvDownloadUrl = null;
   }
+}
+
+window.handleMkvFile = handleMkvFile;
+mkvFileInput.addEventListener("input", function () {
+  handleMkvFile(mkvFileInput);
 });
 
 async function getFFmpeg() {
