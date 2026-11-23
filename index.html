@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#080b12">
+
+    <title>YouTube Player</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<main class="app">
+
+    <!-- CABEÇALHO -->
+    <header class="header">
+        <div class="logo">▶</div>
+
+        <div>
+            <h1>YouTube<span>Player</span></h1>
+            <p>Seus vídeos em uma tela só.</p>
+        </div>
+    </header>
+
+    <!-- CAMPO DE LINK -->
+    <section class="panel">
+
+        <label for="videoUrl">Link do vídeo do YouTube</label>
+
+        <div class="inputrow">
+            <input
+                type="url"
+                id="videoUrl"
+                placeholder="Cole aqui o link do YouTube..."
+            >
+
+            <button id="play" type="button" onclick="loadVideo()">
+                ▶ Reproduzir
+            </button>
+        </div>
+
+        <p class="hint">
+            Links normais, Shorts e transmissões ao vivo.
+        </p>
+
+        <p id="status" class="status"></p>
+
+    </section>
+
+    <!-- PLAYER -->
+    <section class="player">
+
+    <div id="empty" class="empty">
+
+        <div class="playmark">▶</div>
+
+        <h2>Seu vídeo aparecerá aqui</h2>
+
+        <p>Cole um link acima para começar.</p>
+
+    </div>
+
+    <iframe
+        id="frame"
+        title="YouTube Player"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen
+        hidden>
+    </iframe>
+
+    </section>
+
+    <!-- BOTÕES -->
+    <div class="actions">
+
+        <a
+            id="openYT"
+            target="_blank"
+            rel="noopener"
+            hidden>
+            Ver no YouTube ↗
+        </a>
+
+        <button id="clear" class="secondary">
+            Limpar vídeo
+        </button>
+
+    </div>
+
+    <!-- DOWNLOADS -->
+    <section class="panel download">
+
+        <h2>Downloads e conversão</h2>
+
+        <!-- DOWNLOAD DO YOUTUBE STUDIO -->
+        <div class="subpanel">
+
+            <h3>Baixar vídeos do seu próprio canal</h3>
+
+            <p>
+                Para baixar vídeos enviados por você,
+                abra o YouTube Studio e use as opções
+                disponíveis no seu canal.
+            </p>
+
+            <a
+                class="button"
+                href="https://studio.youtube.com/"
+                target="_blank"
+                rel="noopener">
+
+                Abrir YouTube Studio ↗
+
+            </a>
+
+        </div>
+
+        <!-- CONVERSOR -->
+        <div class="subpanel">
+
+            <h3>Converter um vídeo para MP3</h3>
+
+            <p>
+                Escolha um arquivo de vídeo ou áudio
+                armazenado no seu dispositivo.
+                A conversão será realizada no navegador.
+            </p>
+
+            <label class="filebutton" for="localFile">
+                Escolher arquivo
+            </label>
+
+            <input
+                id="localFile"
+                type="file"
+                accept="video/*,audio/*"
+                hidden
+            >
+
+            <span id="filename">
+                Nenhum arquivo selecionado.
+            </span>
+
+            <button id="convert" disabled>
+                ♫ Converter para MP3
+            </button>
+
+            <div id="progress" class="progress" hidden>
+                <div id="bar"></div>
+            </div>
+
+            <p id="convertStatus" class="status"></p>
+
+            <a
+                id="download"
+                class="button download"
+                hidden>
+                Baixar MP3 ↓
+            </a>
+
+        </div>
+
+        <p class="legal">
+            Utilize os downloads e conversões somente com arquivos
+            próprios ou conteúdo para o qual tenha autorização.
+        </p>
+
+    </section>
+
+    <footer>
+        YouTube Player · Reprodutor de vídeos
+    </footer>
+
+</main>
+
+<!-- Biblioteca de conversão MP3 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js"></script>
+
+<!-- JavaScript do projeto -->
+<script src="script.js"></script>
+
+</body>
+</html>
