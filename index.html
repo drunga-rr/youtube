@@ -20,7 +20,7 @@
 
         <div>
             <h1>YouTube<span>Player</span></h1>
-            <p>Seus vídeos em uma telam só.</p>
+            <p>Seus vídeos em uma tela só.</p>
         </div>
     </header>
 
@@ -163,6 +163,49 @@
 
         </div>
 
+        <div class="subpanel">
+
+            <h3>Converter MKV para MP4</h3>
+
+            <p>
+                Selecione um vídeo MKV para convertê-lo localmente no navegador.
+                O arquivo não é enviado para nenhum servidor.
+            </p>
+
+            <label class="filebutton" for="mkvFile">
+                Escolher vídeo MKV
+            </label>
+
+            <input
+                id="mkvFile"
+                type="file"
+                accept=".mkv,video/x-matroska,video/*"
+                hidden
+            >
+
+            <span id="mkvFilename">
+                Nenhum arquivo selecionado.
+            </span>
+
+            <button id="convertMkv" type="button" disabled>
+                Converter para MP4
+            </button>
+
+            <div id="mkvProgress" class="progress" hidden>
+                <div id="mkvBar"></div>
+            </div>
+
+            <p id="mkvStatus" class="status"></p>
+
+            <a
+                id="mkvDownload"
+                class="button download"
+                hidden>
+                Baixar MP4 ↓
+            </a>
+
+        </div>
+
         <p class="legal">
             Utilize os downloads e conversões somente com arquivos
             próprios ou conteúdo para o qual tenha autorização.
@@ -178,6 +221,10 @@
 
 <!-- Biblioteca de conversão MP3 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js"></script>
+
+<!-- FFmpeg WebAssembly para conversão local de vídeo -->
+<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js"></script>
+<script src="https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js"></script>
 
 <!-- JavaScript do projeto -->
 <script src="script.js"></script>
