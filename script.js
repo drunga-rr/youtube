@@ -71,7 +71,16 @@ function loadVideo() {
 
   console.log("ID do vídeo:", id);
 
-  frame.src = `https://www.youtube-nocookie.com/embed/${id}?rel=0&modestbranding=1`;
+  const siteOrigin = window.location.origin;
+  const siteUrl = window.location.href.split("#")[0];
+  const params = new URLSearchParams({
+    rel: "0",
+    modestbranding: "1",
+    origin: siteOrigin,
+    widget_referrer: siteUrl,
+  });
+
+  frame.src = `https://www.youtube-nocookie.com/embed/${id}?${params}`;
 
   frame.hidden = false;
   empty.hidden = true;
