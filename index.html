@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#090d18">
+<title>DrivePlayer</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="app">
+  <header class="topbar">
+    <a class="brand" href="./"><span class="logo">▶</span>Drive<span>Player</span></a>
+    <label class="language-label" for="languageSelect"><span id="languageCaption">Idioma</span>
+      <select id="languageSelect" aria-label="Idioma">
+        <option value="pt-BR">Português (Brasil)</option>
+        <option value="en">English</option>
+        <option value="es">Español</option>
+      </select>
+    </label>
+  </header>
+  <section class="intro">
+    <p class="eyebrow" id="eyebrow">SEU VÍDEO, EM UM SÓ LUGAR</p>
+    <h1 id="title">Assista aos seus vídeos</h1>
+    <p class="subtitle" id="subtitle">Cole um link compartilhável do Google Drive para começar a reprodução.</p>
+  </section>
+  <section class="link-card">
+    <label id="linkLabel" for="driveLink">Link do vídeo no Google Drive</label>
+    <div class="input-row">
+      <input id="driveLink" type="url" placeholder="https://drive.google.com/file/d/..." autocomplete="url">
+      <button id="playButton" class="primary" type="button">▶ Reproduzir</button>
+    </div>
+    <p class="hint" id="hint">O arquivo precisa estar compartilhado como <b>Qualquer pessoa com o link — Leitor</b>.</p>
+    <p id="status" class="status" role="status" aria-live="polite"></p>
+  </section>
+  <section class="player-card">
+    <div class="player-heading">
+      <span><i class="dot"></i><span id="playerLabel">PLAYER DE VÍDEO</span></span>
+      <button id="fullscreenButton" class="secondary" type="button" disabled>⛶ <span id="fullscreenText">Tela cheia</span></button>
+    </div>
+    <div id="playerFrame" class="player-frame">
+      <div id="emptyState" class="empty-state">
+        <div class="big-play">▶</div>
+        <h2 id="emptyTitle">Seu vídeo aparecerá aqui</h2>
+        <p id="emptyText">Insira o link do Google Drive acima e clique em Reproduzir.</p>
+      </div>
+      <iframe id="videoFrame" title="Google Drive video player" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen hidden></iframe>
+    </div>
+    <div class="player-foot">
+      <span id="providerText">Reprodução fornecida pelo Google Drive</span>
+      <button id="openDrive" class="text-button" type="button" hidden>Abrir no Google Drive ↗</button>
+    </div>
+  </section>
+  <section class="help">
+    <h2 id="helpTitle">Não conseguiu reproduzir?</h2>
+    <ol>
+      <li id="help1">Abra o vídeo no Google Drive e selecione <b>Compartilhar</b>.</li>
+      <li id="help2">Em “Acesso geral”, escolha <b>Qualquer pessoa com o link</b>.</li>
+      <li id="help3">Confirme a permissão <b>Leitor</b> e tente novamente.</li>
+    </ol>
+    <p id="helpNote">A reprodução depende das permissões e dos formatos aceitos pelo Google Drive.</p>
+    <p class="important" id="languageNote">A seleção de idioma altera a interface deste site. O idioma dos controles internos do vídeo é controlado pelo Google Drive e não pode ser forçado por esta página.</p>
+  </section>
+  <footer id="footer">DrivePlayer · Interface em Português (Brasil)</footer>
+</main>
+<script src="script.js"></script>
+</body>
+</html>
