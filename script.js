@@ -56,7 +56,7 @@ const openYT = document.querySelector('#openYT');
 
 
 // Carregar vídeo
-function load() {
+function loadVideo() {
 
     const id = getYouTubeId(urlInput.value);
 
