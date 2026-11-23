@@ -1,111 +1,465 @@
-const $ = id => document.getElementById(id);
-const translations = {
- 'pt-BR': {
-  caption:'Idioma', eyebrow:'SEU VÍDEO, EM UM SÓ LUGAR', title:'Assista aos seus vídeos',
-  subtitle:'Cole um link compartilhável do Google Drive para começar a reprodução.',
-  linkLabel:'Link do vídeo no Google Drive', placeholder:'https://drive.google.com/file/d/...',
-  play:'▶ Reproduzir', hint:'O arquivo precisa estar compartilhado como <b>Qualquer pessoa com o link — Leitor</b>.',
-  player:'PLAYER DE VÍDEO', fullscreen:'Tela cheia', emptyTitle:'Seu vídeo aparecerá aqui',
-  emptyText:'Insira o link do Google Drive acima e clique em Reproduzir.',
-  provider:'Reprodução fornecida pelo Google Drive', open:'Abrir no Google Drive ↗',
-  helpTitle:'Não conseguiu reproduzir?', help1:'Abra o vídeo no Google Drive e selecione <b>Compartilhar</b>.',
-  help2:'Em “Acesso geral”, escolha <b>Qualquer pessoa com o link</b>.',
-  help3:'Confirme a permissão <b>Leitor</b> e tente novamente.',
-  helpNote:'A reprodução depende das permissões e dos formatos aceitos pelo Google Drive.',
-  languageNote:'A seleção de idioma altera a interface deste site. O idioma dos controles internos do vídeo é controlado pelo Google Drive e não pode ser forçado por esta página.',
-  footer:'DrivePlayer · Interface em Português (Brasil)',
-  empty:'Cole o link do vídeo antes de continuar.', invalid:'Insira um endereço válido do Google Drive.',
-  badId:'Não consegui identificar o arquivo. Copie o link de compartilhamento do vídeo.',
-  loaded:'Link reconhecido. Se o vídeo não carregar, verifique o compartilhamento no Google Drive.',
-  fullscreenError:'Não foi possível ativar a tela cheia neste navegador.'
- },
- en: {
-  caption:'Language', eyebrow:'YOUR VIDEO, ALL IN ONE PLACE', title:'Watch your videos',
-  subtitle:'Paste a shareable Google Drive link to start playback.',
-  linkLabel:'Google Drive video link', placeholder:'https://drive.google.com/file/d/...',
-  play:'▶ Play', hint:'The file must be shared as <b>Anyone with the link — Viewer</b>.',
-  player:'VIDEO PLAYER', fullscreen:'Fullscreen', emptyTitle:'Your video will appear here',
-  emptyText:'Paste your Google Drive link above and click Play.',
-  provider:'Playback provided by Google Drive', open:'Open in Google Drive ↗',
-  helpTitle:'Video not playing?', help1:'Open the video in Google Drive and select <b>Share</b>.',
-  help2:'Under “General access”, choose <b>Anyone with the link</b>.',
-  help3:'Make sure the permission is <b>Viewer</b>, then try again.',
-  helpNote:'Playback depends on Google Drive permissions and supported video formats.',
-  languageNote:'This language selector changes this website interface. The embedded video controls are managed by Google Drive; this page cannot force their language.',
-  footer:'DrivePlayer · English interface',
-  empty:'Paste the video link before continuing.', invalid:'Enter a valid Google Drive URL.',
-  badId:'Could not identify the file. Copy the video sharing link.',
-  loaded:'Link recognized. If the video does not load, check its Google Drive sharing settings.',
-  fullscreenError:'Fullscreen could not be enabled in this browser.'
- },
- es: {
-  caption:'Idioma', eyebrow:'TU VÍDEO, TODO EN UN SOLO LUGAR', title:'Mira tus vídeos',
-  subtitle:'Pega un enlace compartido de Google Drive para comenzar la reproducción.',
-  linkLabel:'Enlace del vídeo de Google Drive', placeholder:'https://drive.google.com/file/d/...',
-  play:'▶ Reproducir', hint:'El archivo debe compartirse como <b>Cualquier persona con el enlace — Lector</b>.',
-  player:'REPRODUCTOR DE VÍDEO', fullscreen:'Pantalla completa', emptyTitle:'Tu vídeo aparecerá aquí',
-  emptyText:'Introduce el enlace de Google Drive y pulsa Reproducir.',
-  provider:'Reproducción proporcionada por Google Drive', open:'Abrir en Google Drive ↗',
-  helpTitle:'¿No se reproduce?', help1:'Abre el vídeo en Google Drive y selecciona <b>Compartir</b>.',
-  help2:'En “Acceso general”, elige <b>Cualquier persona con el enlace</b>.',
-  help3:'Confirma el permiso <b>Lector</b> e inténtalo de nuevo.',
-  helpNote:'La reproducción depende de los permisos y formatos compatibles con Google Drive.',
-  languageNote:'El selector cambia el idioma de este sitio. Los controles internos del vídeo los administra Google Drive y esta página no puede forzar su idioma.',
-  footer:'DrivePlayer · Interfaz en Español',
-  empty:'Pega el enlace del vídeo para continuar.', invalid:'Introduce una URL válida de Google Drive.',
-  badId:'No se pudo identificar el archivo. Copia el enlace para compartir el vídeo.',
-  loaded:'Enlace reconocido. Si el vídeo no carga, revisa los permisos de Google Drive.',
-  fullscreenError:'No se pudo activar la pantalla completa en este navegador.'
- }
-};
-let currentLang = 'pt-BR';
-function setLanguage(lang) {
- currentLang = translations[lang] ? lang : 'pt-BR';
- const t = translations[currentLang];
- document.documentElement.lang = currentLang;
- const map = {
-  languageCaption:'caption', eyebrow:'eyebrow', title:'title', subtitle:'subtitle',
-  linkLabel:'linkLabel', playButton:'play', hint:'hint', playerLabel:'player',
-  fullscreenText:'fullscreen', emptyTitle:'emptyTitle', emptyText:'emptyText',
-  providerText:'provider', openDrive:'open', helpTitle:'helpTitle', help1:'help1',
-  help2:'help2', help3:'help3', helpNote:'helpNote', languageNote:'languageNote', footer:'footer'
- };
- for (const [id,key] of Object.entries(map)) $(id).innerHTML = t[key];
- $('driveLink').placeholder = t.placeholder;
- $('languageSelect').value = currentLang;
+// ==========================================
+// YOUTUBE PLAYER
+// ==========================================
+
+const urlInput = document.querySelector('#videoUrl');
+const playButton = document.querySelector('#play');
+const frame = document.querySelector('#frame');
+const empty = document.querySelector('#empty');
+const status = document.querySelector('#status');
+const openYT = document.querySelector('#openYT');
+
+// Extrair ID do vídeo do YouTube
+function getYouTubeId(raw) {
+
+    try {
+
+        const url = new URL(raw.trim());
+
+        const host = url.hostname
+            .replace(/^www\./, '')
+            .replace(/^m\./, '');
+
+        let id = null;
+
+        if (host === 'youtu.be') {
+
+            id = url.pathname
+                .split('/')
+                .filter(Boolean)[0];
+
+        } else if (
+            host === 'youtube.com' ||
+            host === 'youtube-nocookie.com'
+        ) {
+
+            if (url.pathname === '/watch') {
+
+                id = url.searchParams.get('v');
+
+            } else {
+
+                const match = url.pathname.match(
+                    /^\/(embed|shorts|live)\/([\w-]+)/
+                );
+
+                id = match ? match[2] : null;
+
+            }
+
+        }
+
+        return id && /^[\w-]{11}$/.test(id)
+            ? id
+            : null;
+
+    } catch {
+
+        return null;
+
+    }
+
 }
-function extractDriveId(raw) {
- let url;
- try { url = new URL(raw); } catch { throw new Error(translations[currentLang].invalid); }
- if (!['drive.google.com','www.drive.google.com','docs.google.com'].includes(url.hostname))
-  throw new Error(translations[currentLang].invalid);
- const match = url.pathname.match(/\/file\/d\/([A-Za-z0-9_-]+)/);
- const id = match ? match[1] : (url.searchParams.get('id') || '');
- if (!/^[A-Za-z0-9_-]+$/.test(id)) throw new Error(translations[currentLang].badId);
- return id;
-}
+
+
+// Carregar vídeo
 function loadVideo() {
- const t = translations[currentLang], raw = $('driveLink').value.trim();
- $('status').textContent = '';
- if (!raw) { $('status').textContent = t.empty; $('driveLink').focus(); return; }
- try {
-  const id = extractDriveId(raw);
-  $('videoFrame').src = `https://drive.google.com/file/d/${encodeURIComponent(id)}/preview`;
-  $('videoFrame').hidden = false;
-  $('emptyState').hidden = true;
-  $('fullscreenButton').disabled = false;
-  $('openDrive').hidden = false;
-  $('openDrive').onclick = () => window.open(`https://drive.google.com/file/d/${encodeURIComponent(id)}/view`, '_blank', 'noopener');
-  $('status').textContent = t.loaded;
- } catch (e) { $('status').textContent = e.message; }
+
+    const id = getYouTubeId(urlInput.value);
+
+    status.textContent = '';
+
+    if (!id) {
+
+        status.textContent =
+            'Link inválido. Cole um link válido do YouTube.';
+
+        return;
+
+    }
+
+    frame.src =
+        'https://www.youtube-nocookie.com/embed/' +
+        id +
+        '?rel=0';
+
+    frame.hidden = false;
+
+    empty.hidden = true;
+
+    openYT.href =
+        'https://www.youtube.com/watch?v=' + id;
+
+    openYT.hidden = false;
+
+    status.textContent =
+        'Vídeo carregado. Alguns vídeos podem ter incorporação desativada.';
+
 }
-$('languageSelect').addEventListener('change', e => setLanguage(e.target.value));
-$('playButton').addEventListener('click', loadVideo);
-$('driveLink').addEventListener('keydown', e => { if (e.key === 'Enter') loadVideo(); });
-$('fullscreenButton').addEventListener('click', async () => {
- try {
-  if (document.fullscreenElement) await document.exitFullscreen();
-  else await $('playerFrame').requestFullscreen();
- } catch { $('status').textContent = translations[currentLang].fullscreenError; }
-});
-setLanguage('pt-BR');
+
+
+// Botão reproduzir
+playButton.addEventListener(
+    'click',
+    loadVideo
+);
+
+
+// Reproduzir ao pressionar Enter
+urlInput.addEventListener(
+    'keydown',
+    function(event) {
+
+        if (event.key === 'Enter') {
+            loadVideo();
+        }
+
+    }
+);
+
+
+// Limpar player
+document.querySelector('#clear').addEventListener(
+    'click',
+    function() {
+
+        frame.src = '';
+
+        frame.hidden = true;
+
+        empty.hidden = false;
+
+        openYT.hidden = true;
+
+        urlInput.value = '';
+
+        status.textContent = '';
+
+        urlInput.focus();
+
+    }
+);
+
+
+// ==========================================
+// CONVERSOR DE ARQUIVOS LOCAIS PARA MP3
+// ==========================================
+
+const fileInput =
+    document.querySelector('#localFile');
+
+const filename =
+    document.querySelector('#filename');
+
+const convertButton =
+    document.querySelector('#convert');
+
+const progress =
+    document.querySelector('#progress');
+
+const bar =
+    document.querySelector('#bar');
+
+const convertStatus =
+    document.querySelector('#convertStatus');
+
+const download =
+    document.querySelector('#download');
+
+let file = null;
+let downloadUrl = null;
+
+
+// Selecionar arquivo
+fileInput.addEventListener(
+    'change',
+    function() {
+
+        file = fileInput.files[0] || null;
+
+        filename.textContent = file
+            ? file.name
+            : 'Nenhum arquivo selecionado.';
+
+        convertButton.disabled = !file;
+
+        download.hidden = true;
+
+        convertStatus.textContent = '';
+
+        if (downloadUrl) {
+
+            URL.revokeObjectURL(downloadUrl);
+
+            downloadUrl = null;
+
+        }
+
+    }
+);
+
+
+// Reamostragem de áudio
+function resample(data, fromRate, toRate) {
+
+    if (fromRate === toRate) {
+        return data;
+    }
+
+    const ratio = fromRate / toRate;
+
+    const length = Math.round(
+        data.length / ratio
+    );
+
+    const output = new Float32Array(length);
+
+    for (let i = 0; i < length; i++) {
+
+        const position = i * ratio;
+
+        const left = Math.floor(position);
+
+        const right = Math.min(
+            left + 1,
+            data.length - 1
+        );
+
+        const fraction = position - left;
+
+        output[i] =
+            data[left] * (1 - fraction) +
+            data[right] * fraction;
+
+    }
+
+    return output;
+
+}
+
+
+// Converter amostras para PCM
+function pcm(data) {
+
+    const output = new Int16Array(data.length);
+
+    for (let i = 0; i < data.length; i++) {
+
+        let value = Math.max(
+            -1,
+            Math.min(1, data[i])
+        );
+
+        output[i] = value < 0
+            ? value * 32768
+            : value * 32767;
+
+    }
+
+    return output;
+
+}
+
+
+// Conversão para MP3
+convertButton.addEventListener(
+    'click',
+    async function() {
+
+        if (!file) {
+            return;
+        }
+
+        if (!window.lamejs) {
+
+            convertStatus.textContent =
+                'Conversor não carregado. Verifique a conexão.';
+
+            return;
+
+        }
+
+        convertButton.disabled = true;
+
+        download.hidden = true;
+
+        progress.hidden = false;
+
+        bar.style.width = '0%';
+
+        convertStatus.textContent =
+            'Lendo arquivo...';
+
+        let audioContext;
+
+        try {
+
+            const raw =
+                await file.arrayBuffer();
+
+            audioContext = new (
+                window.AudioContext ||
+                window.webkitAudioContext
+            )();
+
+            const audio =
+                await audioContext.decodeAudioData(
+                    raw.slice(0)
+                );
+
+            const sampleRate = 44100;
+
+            const left = pcm(
+                resample(
+                    audio.getChannelData(0),
+                    audio.sampleRate,
+                    sampleRate
+                )
+            );
+
+            const right = pcm(
+                resample(
+                    audio.numberOfChannels > 1
+                        ? audio.getChannelData(1)
+                        : audio.getChannelData(0),
+                    audio.sampleRate,
+                    sampleRate
+                )
+            );
+
+            const encoder =
+                new lamejs.Mp3Encoder(
+                    2,
+                    sampleRate,
+                    192
+                );
+
+            const chunks = [];
+
+            const blockSize = 1152;
+
+            // Processar o áudio
+            for (
+                let i = 0;
+                i < left.length;
+                i += blockSize
+            ) {
+
+                const leftChunk =
+                    left.subarray(
+                        i,
+                        i + blockSize
+                    );
+
+                const rightChunk =
+                    right.subarray(
+                        i,
+                        i + blockSize
+                    );
+
+                const encoded =
+                    encoder.encodeBuffer(
+                        leftChunk,
+                        rightChunk
+                    );
+
+                if (encoded.length) {
+
+                    chunks.push(
+                        new Uint8Array(encoded)
+                    );
+
+                }
+
+                const percent =
+                    Math.floor(
+                        (i / left.length) * 100
+                    );
+
+                bar.style.width =
+                    percent + '%';
+
+                convertStatus.textContent =
+                    'Convertendo... ' +
+                    percent +
+                    '%';
+
+                // Liberar o navegador periodicamente
+                if (
+                    i % (blockSize * 100) === 0
+                ) {
+
+                    await new Promise(
+                        resolve =>
+                            setTimeout(resolve, 0)
+                    );
+
+                }
+
+            }
+
+            // Finalizar codificação
+            const finalChunk =
+                encoder.flush();
+
+            if (finalChunk.length) {
+
+                chunks.push(
+                    new Uint8Array(finalChunk)
+                );
+
+            }
+
+            // Criar MP3
+            const mp3Blob =
+                new Blob(
+                    chunks,
+                    {
+                        type: 'audio/mpeg'
+                    }
+                );
+
+            downloadUrl =
+                URL.createObjectURL(mp3Blob);
+
+            download.href =
+                downloadUrl;
+
+            download.download =
+                file.name.replace(
+                    /\.[^.]+$/,
+                    ''
+                ) + '.mp3';
+
+            download.hidden = false;
+
+            bar.style.width = '100%';
+
+            convertStatus.textContent =
+                'Conversão concluída!';
+
+        } catch (error) {
+
+            console.error(error);
+
+            convertStatus.textContent =
+                'Não foi possível converter este arquivo. ' +
+                'O navegador pode não suportar o formato.';
+
+        } finally {
+
+            if (audioContext) {
+
+                await audioContext
+                    .close()
+                    .catch(() => {});
+
+            }
+
+            convertButton.disabled =
+                !file;
+
+        }
+
+    }
+);
