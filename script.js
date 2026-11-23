@@ -10,91 +10,74 @@ const status = document.querySelector('#status');
 const openYT = document.querySelector('#openYT');
 
 // Extrair ID do vídeo do YouTube
-function getYouTubeId(raw) {
+    function getYouTubeId(raw) {
+    if (!raw) return null;
 
     try {
-
         const url = new URL(raw.trim());
-
-        const host = url.hostname
-            .replace(/^www\./, '')
-            .replace(/^m\./, '');
+        const host = url.hostname.toLowerCase();
 
         let id = null;
 
-        if (host === 'youtu.be') {
-
-            id = url.pathname
-                .split('/')
-                .filter(Boolean)[0];
-
-        } else if (
-            host === 'youtube.com' ||
-            host === 'youtube-nocookie.com'
-        ) {
-
-            if (url.pathname === '/watch') {
-
-                id = url.searchParams.get('v');
-
-            } else {
-
-                const match = url.pathname.match(
-                    /^\/(embed|shorts|live)\/([\w-]+)/
-                );
-
-                id = match ? match[2] : null;
-
-            }
-
+        // Links curtos: youtu.be/ID
+        if (host.includes("youtu.be")) {
+            id = url.pathname.split("/").filter(Boolean)[0];
         }
 
-        return id && /^[\w-]{11}$/.test(id)
-            ? id
-            : null;
+        // Links youtube.com
+        else if (
+            host.includes("youtube.com") ||
+            host.includes("youtube-nocookie.com")
+        ) {
+            if (url.pathname === "/watch") {
+                id = url.searchParams.get("v");
+            } else {
+                const match = url.pathname.match(
+                    /\/(embed|shorts|live)\/([a-zA-Z0-9_-]+)/
+                );
 
-    } catch {
+                if (match) {
+                    id = match[2];
+                }
+            }
+        }
+
+        if (id && /^[a-zA-Z0-9_-]{11}$/.test(id)) {
+            return id;
+        }
 
         return null;
 
+    } catch (error) {
+        console.error("Erro ao identificar vídeo:", error);
+        return null;
     }
-
 }
 
 
 // Carregar vídeo
-function loadVideo() {
+function load() {
 
     const id = getYouTubeId(urlInput.value);
 
-    status.textContent = '';
+    status.textContent = "";
 
     if (!id) {
-
-        status.textContent =
-            'Link inválido. Cole um link válido do YouTube.';
-
+        status.textContent = "Link inválido. Verifique o endereço do YouTube.";
         return;
-
     }
 
-    frame.src =
-        'https://www.youtube-nocookie.com/embed/' +
-        id +
-        '?rel=0';
+    console.log("ID do vídeo:", id);
+
+    frame.src = "https://www.youtube.com/embed/" + id;
 
     frame.hidden = false;
-
     empty.hidden = true;
 
-    openYT.href =
-        'https://www.youtube.com/watch?v=' + id;
-
+    openYT.href = "https://www.youtube.com/watch?v=" + id;
     openYT.hidden = false;
 
-    status.textContent =
-        'Vídeo carregado. Alguns vídeos podem ter incorporação desativada.';
-
+    status.textContent = "Carregando vídeo...";
 }
 
 
