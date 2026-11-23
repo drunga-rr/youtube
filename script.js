@@ -71,7 +71,7 @@ function loadVideo() {
 
   console.log("ID do vídeo:", id);
 
-  frame.src = "https://www.youtube.com/embed/" + id;
+  frame.src = `https://www.youtube-nocookie.com/embed/${id}?rel=0&modestbranding=1`;
 
   frame.hidden = false;
   empty.hidden = true;
@@ -79,7 +79,7 @@ function loadVideo() {
   openYT.href = "https://www.youtube.com/watch?v=" + id;
   openYT.hidden = false;
 
-  status.textContent = "Carregando vídeo...";
+  status.textContent = "Abrindo o player do YouTube...";
 }
 
 window.loadVideo = loadVideo;
@@ -87,7 +87,7 @@ window.loadVideo = loadVideo;
 frame.addEventListener("load", function () {
   if (!frame.hidden) {
     status.textContent =
-      "Vídeo carregado. Se a reprodução não iniciar, use os controles do player.";
+      "Player aberto. Se aparecer 'Vídeo indisponível', este vídeo não permite incorporação; use 'Ver no YouTube'.";
   }
 });
 
